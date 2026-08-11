@@ -49,7 +49,8 @@ object TConAffixRewards {
 
     internal enum class AffixKind(val id: String) {
         PREFIX("prefix"),
-        SUFFIX("suffix")
+        SUFFIX("suffix"),
+        IMPLICIT("implicit")
     }
 
     internal data class PartProfile(
@@ -123,6 +124,16 @@ object TConAffixRewards {
         PartProfile("tconstruct:maille", PartFamily.ARMOR, 60),
         PartProfile("tconstruct:shield_core", PartFamily.SHIELD, 72)
     )
+
+    internal val exclusivePartProfiles = listOf(
+        PartProfile("tinkersweaponry:great_blade", PartFamily.MELEE_HEAD, 100),
+        PartProfile("tinker_rapier:slender_blade", PartFamily.MELEE_HEAD, 100),
+        PartProfile("additionalweaponry:defensive_handle", PartFamily.HANDLE, 100),
+        PartProfile("tinkers_things:shield_plating", PartFamily.SHIELD, 100),
+        PartProfile("tinkersweaponry:spear_head", PartFamily.MELEE_HEAD, 100)
+    )
+
+    internal val allPartProfiles: List<PartProfile> = partProfiles + exclusivePartProfiles
 
     private val commonTiers = listOf(
         Tier(1, "sovereign", 0.18, 0.24, 6),
@@ -323,23 +334,41 @@ object TConAffixRewards {
         "tconstruct:offhanded" to "Offhanded"
     )
 
-    fun rollAffixedPart(random: RandomSource): ItemStack? {
+    internal fun rollAffixedPart(
+        random: RandomSource,
+        origin: AffixOrigin = AffixOrigin.GLOBAL,
+        provenance: String = "unknown"
+    ): ItemStack? {
         if (!ModList.get().isLoaded(TCON_MODID)) return null
-        val candidates = partProfiles.mapNotNull { profile ->
+        val exclusiveRoll = origin != AffixOrigin.GLOBAL && random.nextFloat() < 0.35f
+        var candidates = allPartProfiles.filter { AffixOrigins.allowsPart(origin, it.itemId, exclusiveRoll) }.mapNotNull { profile ->
             val item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId) ?: return@mapNotNull null)
                 ?.takeUnless { it.defaultInstance.isEmpty } as? ToolPartItem
                 ?: return@mapNotNull null
             profile to item
         }
+        if (candidates.isEmpty() && exclusiveRoll) {
+            candidates = allPartProfiles.filter { AffixOrigins.allowsPart(origin, it.itemId, false) }.mapNotNull { profile ->
+                val item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId) ?: return@mapNotNull null) as? ToolPartItem
+                    ?: return@mapNotNull null
+                profile to item
+            }
+        }
         if (candidates.isEmpty()) return null
 
         val (profile, item) = weightedPick(candidates, random) { it.first.weight } ?: return null
-        val material = rollMaterial(item, random) ?: return null
+        val material = rollMaterial(item, random, origin) ?: return null
         val stack = item.withMaterial(material.identifier)
         if (item.getMaterial(stack) == IMaterial.UNKNOWN_ID) return null
         val sourcePart = ForgeRegistries.ITEMS.getKey(stack.item)?.toString() ?: profile.itemId
-        val affixes = rollAffixes(sourcePart, profile.family, random)
+        val affixes = rollAffixes(
+            sourcePart, profile.family, random, origin,
+            targetCount = if (origin == AffixOrigin.GLOBAL) null else fontAffixCount(random.nextFloat()),
+            lucky = origin != AffixOrigin.GLOBAL,
+            guaranteeOriginAffix = origin != AffixOrigin.GLOBAL
+        )
         writeToolAffixes(stack, affixes)
+        AffixCrafting.stampNatural(stack, origin, provenance, random)
         return stack
     }
 
@@ -358,26 +387,65 @@ object TConAffixRewards {
         event.toolTip += Component.translatable("tooltip.tconaffixes.affixes").withStyle(ChatFormatting.DARK_RED)
         affixes.forEach { affix ->
             event.toolTip += Component.literal(formatAffixLine(affix)).withStyle(
-                if (affix.getString("kind") == AffixKind.PREFIX.id) ChatFormatting.RED else ChatFormatting.LIGHT_PURPLE
+                when (affix.getString("kind")) {
+                    AffixKind.PREFIX.id -> ChatFormatting.RED
+                    AffixKind.IMPLICIT.id -> ChatFormatting.GOLD
+                    else -> ChatFormatting.LIGHT_PURPLE
+                }
             )
         }
+        val tag = event.itemStack.tag ?: return
+        tag.getString(AffixCrafting.PROVENANCE_TAG).takeIf(String::isNotBlank)?.let { provenance ->
+            val origin = tag.getString(AffixCrafting.ORIGIN_TAG).ifBlank { AffixOrigin.GLOBAL.id }
+            event.toolTip += Component.literal("Found in $origin · $provenance").withStyle(ChatFormatting.DARK_GRAY)
+        }
+        if (tag.getBoolean(AffixCrafting.MUTATION_LOCKED_TAG)) {
+            event.toolTip += Component.literal("Mutation locked").withStyle(ChatFormatting.DARK_RED)
+        } else if (tag.getBoolean(AffixCrafting.SALVAGE_SPENT_TAG)) {
+            event.toolTip += Component.literal("Salvage spent").withStyle(ChatFormatting.DARK_GRAY)
+        } else if (!tag.getBoolean(AffixCrafting.NATURAL_TAG)) {
+            event.toolTip += Component.literal("Forged").withStyle(ChatFormatting.GRAY)
+        }
+        event.toolTip += Component.translatable("tooltip.tconaffixes.salvage_hint").withStyle(ChatFormatting.DARK_GRAY)
     }
 
-    internal fun rollAffixes(sourcePart: String, family: PartFamily, random: RandomSource): List<CompoundTag> {
-        val targetCount = affixCountForRoll(random.nextFloat())
+    internal fun rollAffixes(
+        sourcePart: String,
+        family: PartFamily,
+        random: RandomSource,
+        origin: AffixOrigin = AffixOrigin.GLOBAL,
+        targetCount: Int? = null,
+        lucky: Boolean = false,
+        guaranteeOriginAffix: Boolean = false
+    ): List<CompoundTag> {
+        val desiredCount = targetCount?.coerceIn(1, 6) ?: affixCountForRoll(random.nextFloat())
         val chosen = mutableListOf<AffixDefinition>()
         var prefixCount = 0
         var suffixCount = 0
 
-        repeat(targetCount * 8) {
-            if (chosen.size >= targetCount) return@repeat
+        if (guaranteeOriginAffix) {
+            val exclusive = affixPool.filter { it.allows(family) && AffixOrigins.isExclusiveAffix(origin, it.id) }
+            weightedPick(exclusive, random) { it.weight }?.let { definition ->
+                chosen += definition
+                when (definition.kind) {
+                    AffixKind.PREFIX -> prefixCount++
+                    AffixKind.SUFFIX -> suffixCount++
+                    AffixKind.IMPLICIT -> Unit
+                }
+            }
+        }
+
+        repeat(desiredCount * 10) {
+            if (chosen.size >= desiredCount) return@repeat
             val usedGroups = chosen.map { it.group }.toSet()
             val candidates = affixPool.filter { definition ->
                 definition.allows(family) &&
+                    AffixOrigins.allowsAffix(origin, definition.id) &&
                     definition.group !in usedGroups &&
                     when (definition.kind) {
                         AffixKind.PREFIX -> prefixCount < MAX_PREFIXES
                         AffixKind.SUFFIX -> suffixCount < MAX_SUFFIXES
+                        AffixKind.IMPLICIT -> false
                     }
             }
             val definition = weightedPick(candidates, random) { it.weight } ?: return@repeat
@@ -385,14 +453,55 @@ object TConAffixRewards {
             when (definition.kind) {
                 AffixKind.PREFIX -> prefixCount++
                 AffixKind.SUFFIX -> suffixCount++
+                AffixKind.IMPLICIT -> Unit
             }
         }
 
-        return chosen.map { definition ->
-            val tier = if (definition.stats.isEmpty()) uniqueModifierTier else
-                weightedPick(definition.tiers, random) { it.weight } ?: definition.tiers.last()
-            createAffix(definition, tier, sourcePart, random)
+        return chosen.map { rollDefinition(it, sourcePart, random, lucky) }
+    }
+
+    internal fun rollAdditionalAffix(
+        sourcePart: String,
+        family: PartFamily,
+        existing: List<CompoundTag>,
+        random: RandomSource,
+        origin: AffixOrigin
+    ): CompoundTag? {
+        val prefixCount = existing.count { it.getString("kind") == AffixKind.PREFIX.id }
+        val suffixCount = existing.count { it.getString("kind") == AffixKind.SUFFIX.id }
+        val groups = existing.map { it.getString("group") }.filter(String::isNotBlank).toSet()
+        val definitions = affixPool.filter { definition ->
+            definition.allows(family) && AffixOrigins.allowsAffix(origin, definition.id) && definition.group !in groups &&
+                when (definition.kind) {
+                    AffixKind.PREFIX -> prefixCount < MAX_PREFIXES
+                    AffixKind.SUFFIX -> suffixCount < MAX_SUFFIXES
+                    AffixKind.IMPLICIT -> false
+                }
         }
+        return weightedPick(definitions, random) { it.weight }?.let { rollDefinition(it, sourcePart, random, false) }
+    }
+
+    internal fun rollAffixSide(
+        sourcePart: String,
+        family: PartFamily,
+        kind: AffixKind,
+        count: Int,
+        preserved: List<CompoundTag>,
+        random: RandomSource,
+        origin: AffixOrigin
+    ): List<CompoundTag> {
+        val chosen = mutableListOf<AffixDefinition>()
+        val usedGroups = preserved.map { it.getString("group") }.filter(String::isNotBlank).toMutableSet()
+        repeat(count.coerceIn(1, 3) * 10) {
+            if (chosen.size >= count.coerceIn(1, 3)) return@repeat
+            val candidates = affixPool.filter { definition ->
+                definition.kind == kind && definition.allows(family) && AffixOrigins.allowsAffix(origin, definition.id) && definition.group !in usedGroups
+            }
+            val picked = weightedPick(candidates, random) { it.weight } ?: return@repeat
+            chosen += picked
+            usedGroups += picked.group
+        }
+        return chosen.map { rollDefinition(it, sourcePart, random, false) }
     }
 
     internal fun rollConfiguredTier(random: RandomSource, weights: List<Int> = TConAffixConfig.tierWeights()): Int? {
@@ -403,17 +512,17 @@ object TConAffixRewards {
         return TConAffixConfig.materialsForTier(tier).mapNotNull(MaterialId::tryParse)
     }
 
-    private fun rollMaterial(part: ToolPartItem, random: RandomSource): IMaterial? {
+    private fun rollMaterial(part: ToolPartItem, random: RandomSource, origin: AffixOrigin): IMaterial? {
         if (!MaterialRegistry.isFullyLoaded()) return null
         val registry = MaterialRegistry.getInstance()
         val candidatesByTier = (1..4).associateWith { tier ->
-            configuredMaterialIds(tier).mapNotNull { id ->
+            AffixOrigins.materialIds(origin, tier).mapNotNull(MaterialId::tryParse).mapNotNull { id ->
                 registry.getMaterial(id).takeUnless { material ->
                     material == IMaterial.UNKNOWN || material.isHidden || !part.canUseMaterial(material)
                 }
             }
         }
-        val selectedTier = rollConfiguredTier(random) ?: return null
+        val selectedTier = rollConfiguredTier(random, if (origin == AffixOrigin.GLOBAL) TConAffixConfig.tierWeights() else listOf(4500, 3500, 1700, 300)) ?: return null
         for (tier in selectedTier downTo 1) {
             val candidates = candidatesByTier[tier].orEmpty()
             if (candidates.isNotEmpty()) return candidates[random.nextInt(candidates.size)]
@@ -430,6 +539,14 @@ object TConAffixRewards {
             roll < 0.78f -> 2
             else -> 1
         }
+    }
+
+    internal fun fontAffixCount(roll: Float): Int = when {
+        roll < 0.05f -> 6
+        roll < 0.15f -> 5
+        roll < 0.35f -> 4
+        roll < 0.65f -> 3
+        else -> 2
     }
 
     internal fun createAffix(stat: String, percent: Double, sourcePart: String): CompoundTag {
@@ -679,6 +796,11 @@ object TConAffixRewards {
 
     internal fun definition(id: String): AffixDefinition? = affixPool.firstOrNull { it.id == id }
 
+    internal fun partProfile(stack: ItemStack): PartProfile? {
+        val id = ForgeRegistries.ITEMS.getKey(stack.item)?.toString() ?: return null
+        return allPartProfiles.firstOrNull { it.itemId == id }
+    }
+
     internal fun looksLikeTConTool(stack: ItemStack): Boolean {
         if (stack.isEmpty) return false
         val tag = stack.tag ?: return false
@@ -746,7 +868,7 @@ object TConAffixRewards {
         return ModifierGrant(id, level)
     }
 
-    private fun rollList(rolls: List<Pair<String, Double>>): ListTag {
+    internal fun rollList(rolls: List<Pair<String, Double>>): ListTag {
         return ListTag().apply {
             rolls.forEach { (stat, percent) ->
                 add(CompoundTag().apply {
@@ -755,6 +877,15 @@ object TConAffixRewards {
                 })
             }
         }
+    }
+
+    private fun rollDefinition(definition: AffixDefinition, sourcePart: String, random: RandomSource, lucky: Boolean): CompoundTag {
+        val tier = if (definition.stats.isEmpty()) uniqueModifierTier else {
+            val tiers = if (lucky) definition.tiers.filter { it.rank <= 3 } else definition.tiers
+            weightedPick(tiers, random) { tier -> if (lucky) (4 - tier.rank).coerceAtLeast(1) else tier.weight }
+                ?: tiers.last()
+        }
+        return createAffix(definition, tier, sourcePart, random)
     }
 
     private fun modifierList(modifiers: List<ModifierGrant>): ListTag {

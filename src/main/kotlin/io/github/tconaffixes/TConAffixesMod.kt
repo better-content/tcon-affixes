@@ -12,6 +12,7 @@ class TConAffixesMod {
         val modBus = FMLJavaModLoadingContext.get().modEventBus
         AffixItems.REGISTRY.register(modBus)
         AffixModifiers.REGISTRY.register(modBus)
+        AffixNetwork.register()
         modBus.addListener(TConAffixValidation::onConfigLoading)
         modBus.addListener(TConAffixValidation::onConfigReloading)
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TConAffixConfig.SPEC)

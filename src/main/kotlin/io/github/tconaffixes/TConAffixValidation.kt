@@ -34,23 +34,30 @@ object TConAffixValidation {
     private fun validateMaterials() {
         val registry = MaterialRegistry.getInstance()
         var errors = 0
-        for (tier in 1..4) {
-            TConAffixRewards.configuredMaterialIds(tier).forEach { id ->
+        val origins = listOf(AffixOrigin.GLOBAL, AffixOrigin.NETHER, AffixOrigin.AETHER, AffixOrigin.UNDERGARDEN, AffixOrigin.OTHERSIDE)
+        origins.forEach { origin ->
+            for (tier in 1..4) {
+                AffixOrigins.materialIds(origin, tier).mapNotNull(slimeknights.tconstruct.library.materials.definition.MaterialId::tryParse).forEach { id ->
                 val material = registry.getMaterial(id)
                 val declaredTier = material.tier.coerceAtLeast(1)
                 if (material == IMaterial.UNKNOWN || material.isHidden || declaredTier != tier) {
-                    logger.error("TCon Affixes material {} is unavailable, hidden, or not in configured tier {}", id, tier)
+                    logger.error("TCon Affixes {} material {} is unavailable, hidden, or not in configured tier {}", origin.id, id, tier)
                     errors++
                 }
             }
+            }
         }
 
-        TConAffixRewards.partProfiles.forEach { profile ->
+        TConAffixRewards.allPartProfiles.forEach { profile ->
             val part = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId)) as? ToolPartItem
-            val usable = part != null && (1..4).any { tier ->
-                TConAffixRewards.configuredMaterialIds(tier).any { id ->
-                    val material = registry.getMaterial(id)
-                    material != IMaterial.UNKNOWN && !material.isHidden && part.canUseMaterial(material)
+            val partOrigin = AffixOrigins.exclusiveParts[profile.itemId]
+            val relevantOrigins = partOrigin?.let(::listOf) ?: origins
+            val usable = part != null && relevantOrigins.any { origin ->
+                (1..4).any { tier ->
+                    AffixOrigins.materialIds(origin, tier).mapNotNull(slimeknights.tconstruct.library.materials.definition.MaterialId::tryParse).any { id ->
+                        val material = registry.getMaterial(id)
+                        material != IMaterial.UNKNOWN && !material.isHidden && part.canUseMaterial(material)
+                    }
                 }
             }
             if (!usable) {
@@ -58,7 +65,7 @@ object TConAffixValidation {
                 errors++
             }
         }
-        if (errors == 0) logger.info("TCon Affixes validated {} part profiles and four material tiers", TConAffixRewards.partProfiles.size)
+        if (errors == 0) logger.info("TCon Affixes validated {} part profiles across {} physical origin pools", TConAffixRewards.allPartProfiles.size, origins.size)
         else logger.error("TCon Affixes material validation found {} error(s); invalid rewards will fail closed", errors)
     }
 

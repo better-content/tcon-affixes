@@ -354,6 +354,69 @@ class TConAffixRewardsTest {
         assertFalse(multipliers.contains("tconstruct:attack_damage"))
     }
 
+    @Test
+    fun physicalOriginsComeFromPartAndMaterialIdentity() {
+        assertEquals(AffixOrigin.NETHER, AffixOrigins.physicalOrigin("tinkersweaponry:great_blade", "tconstruct:manyullyn"))
+        assertEquals(AffixOrigin.AETHER, AffixOrigins.physicalOrigin("tconstruct:small_blade", "tconaffixes:zanite"))
+        assertEquals(AffixOrigin.UNDERGARDEN, AffixOrigins.physicalOrigin("additionalweaponry:defensive_handle", "tconaffixes:cloggrum"))
+        assertEquals(AffixOrigin.GLOBAL, AffixOrigins.physicalOrigin("tinker_rapier:slender_blade", "tconstruct:manyullyn"))
+    }
+
+    @Test
+    fun everyFontRollGuaranteesAnExclusiveAffixAndRespectsCaps() {
+        val cases = listOf(
+            AffixOrigin.NETHER to TConAffixRewards.PartFamily.MELEE_HEAD,
+            AffixOrigin.AETHER to TConAffixRewards.PartFamily.BOW,
+            AffixOrigin.UNDERGARDEN to TConAffixRewards.PartFamily.TOOL_HEAD,
+            AffixOrigin.OTHERSIDE to TConAffixRewards.PartFamily.RANGED
+        )
+        cases.forEachIndexed { index, (origin, family) ->
+            repeat(100) { sample ->
+                val affixes = TConAffixRewards.rollAffixes(
+                    "test:${origin.id}", family, RandomSource.create(index * 10_000L + sample), origin,
+                    targetCount = TConAffixRewards.fontAffixCount(sample / 100f), lucky = true, guaranteeOriginAffix = true
+                )
+                assertTrue(affixes.size in 2..6, origin.id)
+                assertTrue(affixes.any { AffixOrigins.isExclusiveAffix(origin, it.getString("id")) }, origin.id)
+                assertTrue(affixes.count { it.getString("kind") == "prefix" } <= 3)
+                assertTrue(affixes.count { it.getString("kind") == "suffix" } <= 3)
+            }
+        }
+    }
+
+    @Test
+    fun fontAffixCountNeverRollsSingleAffix() {
+        assertEquals(6, TConAffixRewards.fontAffixCount(0.0f))
+        assertEquals(5, TConAffixRewards.fontAffixCount(0.05f))
+        assertEquals(4, TConAffixRewards.fontAffixCount(0.15f))
+        assertEquals(3, TConAffixRewards.fontAffixCount(0.35f))
+        assertEquals(2, TConAffixRewards.fontAffixCount(0.99f))
+    }
+
+    @Test
+    fun salvageBandsIncreaseWithOriginalQualityAndFontOrigin() {
+        val faint = listOf(affix("tconstruct:durability", 0.03, "test:part").apply { putInt("tier", 5) })
+        val sovereign = List(6) { index -> affix("test:stat_$index", 0.20, "test:part").apply { putInt("tier", 1) } }
+        assertEquals(1, AffixCrafting.salvageBand(faint, AffixOrigin.GLOBAL))
+        assertEquals(4, AffixCrafting.salvageBand(sovereign, AffixOrigin.NETHER))
+    }
+
+    @Test
+    fun killCurrencyTableContainsAllSixCurrenciesAtExpectedOrderOfMagnitude() {
+        val random = RandomSource.create(918273L)
+        val counts = buildMap<AffixCurrencyType, Int> {
+            repeat(100_000) {
+                val type = GlobalAffixLoot.rollKillCurrency(random)
+                put(type, (get(type) ?: 0) + 1)
+            }
+        }
+        assertEquals(AffixCurrencyType.entries.toSet(), counts.keys)
+        assertTrue(counts.getValue(AffixCurrencyType.RECAST) in 43_500..46_500)
+        assertTrue(counts.getValue(AffixCurrencyType.PRESERVE_PREFIXES) in 4_400..5_600)
+        assertTrue(counts.getValue(AffixCurrencyType.PRESERVE_SUFFIXES) in 4_400..5_600)
+        assertTrue(counts.getValue(AffixCurrencyType.MUTATE) in 4_400..5_600)
+    }
+
     private fun affix(stat: String, percent: Double, sourcePart: String): CompoundTag {
         return TConAffixRewards.createAffix(stat, percent, sourcePart)
     }
