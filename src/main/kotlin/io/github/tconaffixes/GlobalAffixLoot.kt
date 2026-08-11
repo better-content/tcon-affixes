@@ -12,14 +12,11 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
 
 object GlobalAffixLoot {
-    private const val HOSTILE_DROP_CHANCE = 0.01f
-    private const val CHEST_CACHE_CHANCE = 0.03f
-
     @SubscribeEvent
     fun onLivingDrops(event: LivingDropsEvent) {
         val level = event.entity.level()
         if (level.isClientSide || event.entity !is Mob || event.entity.type.category != net.minecraft.world.entity.MobCategory.MONSTER) return
-        if (level.random.nextFloat() >= HOSTILE_DROP_CHANCE) return
+        if (level.random.nextDouble() >= TConAffixConfig.hostileDropChance.get()) return
         val part = TConAffixRewards.rollAffixedPart(level.random) ?: return
         event.drops += ItemEntity(level, event.entity.x, event.entity.y, event.entity.z, part)
     }
@@ -32,7 +29,7 @@ object GlobalAffixLoot {
             LootPool.lootPool()
                 .name("tconaffixes:affixed_part_cache")
                 .setRolls(ConstantValue.exactly(1f))
-                .`when`(LootItemRandomChanceCondition.randomChance(CHEST_CACHE_CHANCE))
+                .`when`(LootItemRandomChanceCondition.randomChance(TConAffixConfig.chestCacheChance.get().toFloat()))
                 .add(LootItem.lootTableItem(AffixItems.CACHE.get()))
                 .build()
         )

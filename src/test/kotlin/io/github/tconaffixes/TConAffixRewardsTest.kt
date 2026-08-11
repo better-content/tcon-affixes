@@ -56,13 +56,13 @@ class TConAffixRewardsTest {
         assertTrue("tconstruct:exchanging" in creativeModifierIds)
         assertTrue("tconstruct:severing" in creativeModifierIds)
         assertTrue("tconstruct:sweeping_edge" in creativeModifierIds)
-        assertTrue("tconstruct:piercing" in creativeModifierIds)
+        assertTrue("tconstruct:pierce" in creativeModifierIds)
         assertTrue("tconstruct:fiery" in creativeModifierIds)
         assertTrue("tconstruct:freezing" in creativeModifierIds)
         assertTrue("tconstruct:scope" in creativeModifierIds)
         assertTrue("tconstruct:double_jump" in creativeModifierIds)
         assertTrue("tconstruct:reflecting" in creativeModifierIds)
-        assertTrue("tconstruct:offhand_attack" in creativeModifierIds)
+        assertTrue("tconstruct:offhanded" in creativeModifierIds)
 
         TConAffixRewards.affixPool.forEach { definition ->
             assertTrue(definition.id.isNotBlank())
@@ -116,15 +116,21 @@ class TConAffixRewardsTest {
 
                 affixes.forEach { rolled ->
                     val definition = assertNotNull(TConAffixRewards.definition(rolled.getString("id")))
-                    val tier = assertNotNull(definition.tiers.firstOrNull { it.rank == rolled.getInt("tier") })
 
                     assertTrue(definition.allows(family), definition.id)
                     assertEquals(definition.kind.id, rolled.getString("kind"))
                     assertEquals(definition.group, rolled.getString("group"))
                     assertEquals(definition.name, rolled.getString("name"))
-                    assertEquals(tier.name, rolled.getString("tier_name"))
                     assertEquals("test:${family.name.lowercase()}", rolled.getString("source_part"))
-                    assertRollsMatchDefinition(rolled, definition, tier)
+                    if (definition.stats.isEmpty()) {
+                        assertEquals(0, rolled.getInt("tier"))
+                        assertEquals("unique", rolled.getString("tier_name"))
+                        assertTrue(TConAffixRewards.rolls(rolled).isEmpty())
+                    } else {
+                        val tier = assertNotNull(definition.tiers.firstOrNull { it.rank == rolled.getInt("tier") })
+                        assertEquals(tier.name, rolled.getString("tier_name"))
+                        assertRollsMatchDefinition(rolled, definition, tier)
+                    }
                     assertModifiersMatchDefinition(rolled, definition)
                 }
             }
@@ -190,6 +196,28 @@ class TConAffixRewardsTest {
     }
 
     @Test
+    fun configuredMaterialTierRollHonorsWeightsAndCanReachJackpotTier() {
+        assertEquals(1, TConAffixRewards.rollConfiguredTier(RandomSource.create(1L), listOf(1, 0, 0, 0)))
+        assertEquals(2, TConAffixRewards.rollConfiguredTier(RandomSource.create(2L), listOf(0, 1, 0, 0)))
+        assertEquals(3, TConAffixRewards.rollConfiguredTier(RandomSource.create(3L), listOf(0, 0, 1, 0)))
+        assertEquals(4, TConAffixRewards.rollConfiguredTier(RandomSource.create(4L), listOf(0, 0, 0, 1)))
+        assertEquals(null, TConAffixRewards.rollConfiguredTier(RandomSource.create(5L), listOf(0, 0, 0, 0)))
+    }
+
+    @Test
+    fun ownedModifierDeltaPreservesOrdinaryLevels() {
+        assertEquals(1, TConAffixRewards.ownedLevelDelta(currentLevel = 2, storedOwnedLevel = 1, desiredOwnedLevel = 2))
+        assertEquals(-1, TConAffixRewards.ownedLevelDelta(currentLevel = 3, storedOwnedLevel = 1, desiredOwnedLevel = 0))
+        assertEquals(0, TConAffixRewards.ownedLevelDelta(currentLevel = 2, storedOwnedLevel = 0, desiredOwnedLevel = 0))
+    }
+
+    @Test
+    fun ownedModifierDeltaRecoversFromAStaleOwnershipLedger() {
+        assertEquals(1, TConAffixRewards.ownedLevelDelta(currentLevel = 0, storedOwnedLevel = 2, desiredOwnedLevel = 1))
+        assertEquals(0, TConAffixRewards.ownedLevelDelta(currentLevel = 1, storedOwnedLevel = 2, desiredOwnedLevel = 1))
+    }
+
+    @Test
     fun mergeReplacesOnlyMatchingSourcePart() {
         val oldHead = affix("tconstruct:attack_damage", 0.05, "tconstruct:pick_head")
         val oldHandle = affix("tconstruct:durability", 0.10, "tconstruct:tool_handle")
@@ -219,6 +247,21 @@ class TConAffixRewardsTest {
         val merged = TConAffixRewards.mergeAffixes(existing, emptyList())
         assertEquals(existing.map { it.getString("stat") }, merged.map { it.getString("stat") })
         assertEquals(existing.map { it.getString("source_part") }, merged.map { it.getString("source_part") })
+    }
+
+    @Test
+    fun mergeRemovesReplacedPartWhenItsIncomingAffixHasNoCompatibleLines() {
+        val oldHead = affix("tconstruct:attack_damage", 0.05, "tconstruct:pick_head")
+        val oldHandle = affix("tconstruct:durability", 0.10, "tconstruct:tool_handle")
+
+        val merged = TConAffixRewards.mergeAffixes(
+            existing = listOf(oldHead, oldHandle),
+            input = emptyList(),
+            replacingParts = setOf("tconstruct:pick_head")
+        )
+
+        assertEquals(listOf("tconstruct:tool_handle"), merged.map { it.getString("source_part") })
+        assertEquals(listOf("tconstruct:durability"), merged.map { it.getString("stat") })
     }
 
     @Test

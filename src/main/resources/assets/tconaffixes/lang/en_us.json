@@ -1,3 +1,6 @@
 {
-  "item.tconaffixes.affixed_part_cache": "Affixed Part Cache"
+  "item.tconaffixes.affixed_part_cache": "Affixed Part Cache",
+  "tooltip.tconaffixes.affixes": "Affixes",
+  "modifier.tconaffixes.affix_stats": "Affix Stats",
+  "modifier.tconaffixes.affix_stats.description": "Reapplies the stat rolls carried by affixed parts."
 }
