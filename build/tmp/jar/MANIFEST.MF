@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Specification-Title: tconaffixes
-Specification-Vendor: Gerald
-Specification-Version: 1
-Implementation-Title: tcon-affixes
-Implementation-Version: 1.0.0
-Implementation-Vendor: Gerald
-Implementation-Timestamp: 2026-08-12T18:42:50+1000
-
