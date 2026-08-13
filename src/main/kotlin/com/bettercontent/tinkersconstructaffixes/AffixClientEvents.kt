@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.ChatFormatting
@@ -33,7 +33,7 @@ internal object AffixClientEvents {
                 val type = AffixItems.type(hovered.item)
                 if (type != null) {
                     armed = Armed(hovered.containerSlot, type)
-                    player.displayClientMessage(Component.translatable("message.tconaffixes.armed", hovered.item.hoverName), true)
+                    player.displayClientMessage(Component.translatable("message.tinkers_construct_affixes.armed", hovered.item.hoverName), true)
                     event.isCanceled = true
                     return
                 }
@@ -97,7 +97,7 @@ internal object AffixClientEvents {
         }
         event.guiGraphics.drawString(
             Minecraft.getInstance().font,
-            Component.translatable("message.tconaffixes.targeting").withStyle(ChatFormatting.AQUA),
+            Component.translatable("message.tinkers_construct_affixes.targeting").withStyle(ChatFormatting.AQUA),
             screen.guiLeft,
             screen.guiTop - 11,
             0xFFFFFF,
@@ -107,8 +107,8 @@ internal object AffixClientEvents {
 
     private fun openConfirmation(parent: AbstractContainerScreen<*>, mutation: Boolean, target: Slot) {
         val selected = armed
-        val title = if (mutation) Component.translatable("screen.tconaffixes.mutate.title") else Component.translatable("screen.tconaffixes.salvage.title")
-        val message = if (mutation) Component.translatable("screen.tconaffixes.mutate.message") else Component.translatable("screen.tconaffixes.salvage.message")
+        val title = if (mutation) Component.translatable("screen.tinkers_construct_affixes.mutate.title") else Component.translatable("screen.tinkers_construct_affixes.salvage.title")
+        val message = if (mutation) Component.translatable("screen.tinkers_construct_affixes.mutate.message") else Component.translatable("screen.tinkers_construct_affixes.salvage.message")
         Minecraft.getInstance().execute {
             Minecraft.getInstance().setScreen(ConfirmScreen({ accepted ->
                 Minecraft.getInstance().setScreen(parent)

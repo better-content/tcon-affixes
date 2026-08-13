@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import com.mojang.logging.LogUtils
 import net.minecraft.resources.ResourceLocation
@@ -41,7 +41,7 @@ object TConAffixValidation {
                 val material = registry.getMaterial(id)
                 val declaredTier = material.tier.coerceAtLeast(1)
                 if (material == IMaterial.UNKNOWN || material.isHidden || declaredTier != tier) {
-                    logger.error("TCon Affixes {} material {} is unavailable, hidden, or not in configured tier {}", origin.id, id, tier)
+                    logger.error("Tinkers Construct Affixes {} material {} is unavailable, hidden, or not in configured tier {}", origin.id, id, tier)
                     errors++
                 }
             }
@@ -61,18 +61,18 @@ object TConAffixValidation {
                 }
             }
             if (!usable) {
-                logger.error("TCon Affixes part {} has no usable configured material", profile.itemId)
+                logger.error("Tinkers Construct Affixes part {} has no usable configured material", profile.itemId)
                 errors++
             }
         }
-        if (errors == 0) logger.info("TCon Affixes validated {} part profiles across {} physical origin pools", TConAffixRewards.allPartProfiles.size, origins.size)
-        else logger.error("TCon Affixes material validation found {} error(s); invalid rewards will fail closed", errors)
+        if (errors == 0) logger.info("Tinkers Construct Affixes validated {} part profiles across {} physical origin pools", TConAffixRewards.allPartProfiles.size, origins.size)
+        else logger.error("Tinkers Construct Affixes material validation found {} error(s); invalid rewards will fail closed", errors)
     }
 
     private fun validateModifiers() {
         val ids = TConAffixRewards.affixPool.flatMap { it.modifiers }.map { it.id }.toSet()
         val invalid = ids.filter { id -> ModifierId.tryParse(id)?.let(ModifierManager.INSTANCE::contains) != true }
-        if (invalid.isEmpty()) logger.info("TCon Affixes validated {} native modifier grants", ids.size)
-        else logger.error("TCon Affixes will ignore unknown native modifier grants: {}", invalid.joinToString(", "))
+        if (invalid.isEmpty()) logger.info("Tinkers Construct Affixes validated {} native modifier grants", ids.size)
+        else logger.error("Tinkers Construct Affixes will ignore unknown native modifier grants: {}", invalid.joinToString(", "))
     }
 }

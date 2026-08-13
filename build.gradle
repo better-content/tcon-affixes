@@ -4,9 +4,10 @@ plugins {
 }
 
 ext {
-    modId = 'tconaffixes'
-    modName = 'TCon Affixes'
-    modGroupId = 'io.github.tconaffixes'
+    modId = 'tinkers_construct_affixes'
+    artifactName = 'tinkers-construct-affixes'
+    modName = 'Tinkers Construct Affixes'
+    modGroupId = 'com.bettercontent'
     modDescription = 'Affixed Tinkers parts found throughout the world.'
 }
 

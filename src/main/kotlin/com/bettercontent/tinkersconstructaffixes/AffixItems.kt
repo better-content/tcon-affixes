@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
@@ -44,9 +44,9 @@ internal class AffixCurrencyItem(val type: AffixCurrencyType, private val foil: 
 
     override fun appendHoverText(stack: ItemStack, level: Level?, tooltip: MutableList<net.minecraft.network.chat.Component>, flag: TooltipFlag) {
         super.appendHoverText(stack, level, tooltip, flag)
-        tooltip += net.minecraft.network.chat.Component.translatable("tooltip.tconaffixes.currency.${type.name.lowercase()}")
+        tooltip += net.minecraft.network.chat.Component.translatable("tooltip.tinkers_construct_affixes.currency.${type.name.lowercase()}")
             .withStyle(net.minecraft.ChatFormatting.GRAY)
-        tooltip += net.minecraft.network.chat.Component.translatable("tooltip.tconaffixes.currency.use")
+        tooltip += net.minecraft.network.chat.Component.translatable("tooltip.tinkers_construct_affixes.currency.use")
             .withStyle(net.minecraft.ChatFormatting.DARK_GRAY)
     }
 }

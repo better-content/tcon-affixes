@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Mob
@@ -42,7 +42,7 @@ object GlobalAffixLoot {
         if (!id.path.startsWith("chests/")) return
         event.table.addPool(
             LootPool.lootPool()
-                .name("tconaffixes:affixed_part_cache")
+                .name("tinkers_construct_affixes:affixed_part_cache")
                 .setRolls(ConstantValue.exactly(1f))
                 .`when`(LootItemRandomChanceCondition.randomChance(TConAffixConfig.chestCacheChance().toFloat()))
                 .add(LootItem.lootTableItem(AffixItems.CACHE.get()))
@@ -50,7 +50,7 @@ object GlobalAffixLoot {
         )
         event.table.addPool(
             LootPool.lootPool()
-                .name("tconaffixes:reforging_currency")
+                .name("tinkers_construct_affixes:reforging_currency")
                 .setRolls(ConstantValue.exactly(1f))
                 .`when`(LootItemRandomChanceCondition.randomChance(TConAffixConfig.chestCurrencyChance().toFloat()))
                 .add(LootItem.lootTableItem(AffixItems.RECASTING_FLUX.get()).setWeight(55))

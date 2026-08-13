@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.resources.ResourceLocation
 
@@ -35,17 +35,17 @@ internal object AffixOrigins {
             "tconstruct:twisting_vine", "tconstruct:weeping_vine", "tinkers_things:magmaskin")
         assign(AffixOrigin.AETHER,
             "tconstruct:skyslime", "tconstruct:skyslime_vine", "tconstruct:feather", "tconstruct:phantom",
-            "tconstruct:whitestone", "tconstruct:ice", "tconaffixes:skyroot", "tconaffixes:holystone",
-            "tconaffixes:zanite", "tconaffixes:ambrosium", "tconaffixes:gravitite")
+            "tconstruct:whitestone", "tconstruct:ice", "tinkers_construct_affixes:skyroot", "tinkers_construct_affixes:holystone",
+            "tinkers_construct_affixes:zanite", "tinkers_construct_affixes:ambrosium", "tinkers_construct_affixes:gravitite")
         assign(AffixOrigin.UNDERGARDEN,
             "tconstruct:earthslime", "tconstruct:venombone", "tconstruct:ichor", "tconstruct:ichorskin",
-            "tconstruct:ancient_hide", "tconstruct:magnetite", "tconaffixes:cloggrum", "tconaffixes:regalium",
-            "tconaffixes:froststeel", "tconaffixes:utherium", "tconaffixes:forgotten")
+            "tconstruct:ancient_hide", "tconstruct:magnetite", "tinkers_construct_affixes:cloggrum", "tinkers_construct_affixes:regalium",
+            "tinkers_construct_affixes:froststeel", "tinkers_construct_affixes:utherium", "tinkers_construct_affixes:forgotten")
         assign(AffixOrigin.OTHERSIDE,
             "tconstruct:darkthread", "tconstruct:chorus", "tconstruct:end_rod", "tconstruct:ender_pearl",
             "tconstruct:enderslime", "tconstruct:enderslime_vine", "tconstruct:shulker", "tconstruct:dragon_scale",
-            "tconaffixes:echo_wood", "tconaffixes:sculk_bone", "tconaffixes:resonarium",
-            "tconaffixes:reinforced_echo", "tconaffixes:warden_carapace")
+            "tinkers_construct_affixes:echo_wood", "tinkers_construct_affixes:sculk_bone", "tinkers_construct_affixes:resonarium",
+            "tinkers_construct_affixes:reinforced_echo", "tinkers_construct_affixes:warden_carapace")
     }
 
     private val exclusiveAffixes = buildMap {
@@ -99,17 +99,17 @@ internal object AffixOrigins {
     }
 
     private fun localMaterialIds(origin: AffixOrigin, tier: Int): List<String> = when (origin to tier) {
-        AffixOrigin.AETHER to 1 -> listOf("tconaffixes:skyroot", "tconaffixes:holystone")
-        AffixOrigin.AETHER to 2 -> listOf("tconaffixes:zanite")
-        AffixOrigin.AETHER to 3 -> listOf("tconaffixes:ambrosium")
-        AffixOrigin.AETHER to 4 -> listOf("tconaffixes:gravitite")
-        AffixOrigin.UNDERGARDEN to 2 -> listOf("tconaffixes:cloggrum", "tconaffixes:regalium")
-        AffixOrigin.UNDERGARDEN to 3 -> listOf("tconaffixes:froststeel", "tconaffixes:utherium")
-        AffixOrigin.UNDERGARDEN to 4 -> listOf("tconaffixes:forgotten")
-        AffixOrigin.OTHERSIDE to 1 -> listOf("tconaffixes:echo_wood")
-        AffixOrigin.OTHERSIDE to 2 -> listOf("tconaffixes:sculk_bone")
-        AffixOrigin.OTHERSIDE to 3 -> listOf("tconaffixes:resonarium", "tconaffixes:reinforced_echo")
-        AffixOrigin.OTHERSIDE to 4 -> listOf("tconaffixes:warden_carapace")
+        AffixOrigin.AETHER to 1 -> listOf("tinkers_construct_affixes:skyroot", "tinkers_construct_affixes:holystone")
+        AffixOrigin.AETHER to 2 -> listOf("tinkers_construct_affixes:zanite")
+        AffixOrigin.AETHER to 3 -> listOf("tinkers_construct_affixes:ambrosium")
+        AffixOrigin.AETHER to 4 -> listOf("tinkers_construct_affixes:gravitite")
+        AffixOrigin.UNDERGARDEN to 2 -> listOf("tinkers_construct_affixes:cloggrum", "tinkers_construct_affixes:regalium")
+        AffixOrigin.UNDERGARDEN to 3 -> listOf("tinkers_construct_affixes:froststeel", "tinkers_construct_affixes:utherium")
+        AffixOrigin.UNDERGARDEN to 4 -> listOf("tinkers_construct_affixes:forgotten")
+        AffixOrigin.OTHERSIDE to 1 -> listOf("tinkers_construct_affixes:echo_wood")
+        AffixOrigin.OTHERSIDE to 2 -> listOf("tinkers_construct_affixes:sculk_bone")
+        AffixOrigin.OTHERSIDE to 3 -> listOf("tinkers_construct_affixes:resonarium", "tinkers_construct_affixes:reinforced_echo")
+        AffixOrigin.OTHERSIDE to 4 -> listOf("tinkers_construct_affixes:warden_carapace")
         else -> emptyList()
     }
 

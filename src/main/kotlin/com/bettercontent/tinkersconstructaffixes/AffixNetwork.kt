@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.FriendlyByteBuf
@@ -63,7 +63,7 @@ internal object AffixNetwork {
         if (type.name != packet.currencyType) return
         val result = AffixCrafting.apply(target, type, player.random)
         if (result != AffixOperationResult.APPLIED && result != AffixOperationResult.DESTROYED) {
-            player.displayClientMessage(Component.translatable("message.tconaffixes.operation.${result.name.lowercase()}"), true)
+            player.displayClientMessage(Component.translatable("message.tinkers_construct_affixes.operation.${result.name.lowercase()}"), true)
             return
         }
         source.shrink(1)

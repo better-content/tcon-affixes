@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.resources.ResourceLocation
 import slimeknights.tconstruct.library.modifiers.Modifier

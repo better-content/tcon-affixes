@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'tcon-affixes'
+rootProject.name = 'tinkers-construct-affixes'

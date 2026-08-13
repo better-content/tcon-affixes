@@ -1,4 +1,4 @@
-# TCon Affixes
+# Tinkers Construct Affixes
 
 Forge 1.20.1 mod that turns Tinkers' Construct parts into a global, long-term loot chase.
 
@@ -16,7 +16,7 @@ Six currencies support an inventory-native crafting loop:
 
 Master toolsmiths sell the two preservation seals. Fluxes, seals, caches, and affixed parts also enter the global combat and chest-loot economy at deliberately low rates.
 
-Server worlds may tune hostile and Font drop rates, currency and cache rates, tier weights, and material allowlists in `tconaffixes-server.toml`. Global defaults are 1% hostile part/currency drops, 3% chest cache/currency rolls, and material-tier weights of 80% / 17% / 2.9% / 0.1%. Font hostile drops use 3% part and 4% currency rates.
+Server worlds may tune hostile and Font drop rates, currency and cache rates, tier weights, and material allowlists in `tinkers_construct_affixes-server.toml`. Global defaults are 1% hostile part/currency drops, 3% chest cache/currency rolls, and material-tier weights of 80% / 17% / 2.9% / 0.1%. Font hostile drops use 3% part and 4% currency rates.
 
 ## Build
 
@@ -26,4 +26,13 @@ Use Java 17 and run:
 ./gradlew test reobfJar stageRuntimeJar
 ```
 
-The deployable reobfuscated jar is written to `build/libs/tconaffixes-<version>.jar`.
+The deployable reobfuscated jar is written to `build/libs/tinkers_construct_affixes-<version>.jar`.
+
+## Canonical identity
+
+- Repository and release artifact: `tinkers-construct-affixes`
+- Mod ID and resource namespace: `tinkers_construct_affixes`
+- Java package: `com.bettercontent.tinkersconstructaffixes`
+- Validation: `./gradlew build`
+
+This normalization is a clean break. Worlds, configuration files, and integrations created for earlier identities are not migrated or aliased.

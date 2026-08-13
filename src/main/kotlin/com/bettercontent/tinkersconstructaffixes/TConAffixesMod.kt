@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.ModLoadingContext
@@ -22,6 +22,6 @@ class TConAffixesMod {
     }
 
     companion object {
-        const val MOD_ID = "tconaffixes"
+        const val MOD_ID = "tinkers_construct_affixes"
     }
 }

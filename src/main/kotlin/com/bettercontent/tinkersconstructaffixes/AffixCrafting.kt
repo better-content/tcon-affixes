@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.RandomSource
@@ -26,14 +26,14 @@ internal enum class AffixOperationResult {
 }
 
 internal object AffixCrafting {
-    const val MUTATION_LOCKED_TAG = "tconaffixes_mutation_locked"
-    const val SALVAGE_BAND_TAG = "tconaffixes_salvage_band"
-    const val SALVAGE_SEED_TAG = "tconaffixes_salvage_seed"
-    const val SALVAGE_SPENT_TAG = "tconaffixes_salvage_spent"
-    const val ORIGIN_TAG = "tconaffixes_origin"
-    const val PROVENANCE_TAG = "tconaffixes_provenance"
-    const val NATURAL_TAG = "tconaffixes_natural"
-    const val DATA_VERSION_TAG = "tconaffixes_data_version"
+    const val MUTATION_LOCKED_TAG = "tinkers_construct_affixes_mutation_locked"
+    const val SALVAGE_BAND_TAG = "tinkers_construct_affixes_salvage_band"
+    const val SALVAGE_SEED_TAG = "tinkers_construct_affixes_salvage_seed"
+    const val SALVAGE_SPENT_TAG = "tinkers_construct_affixes_salvage_spent"
+    const val ORIGIN_TAG = "tinkers_construct_affixes_origin"
+    const val PROVENANCE_TAG = "tinkers_construct_affixes_provenance"
+    const val NATURAL_TAG = "tinkers_construct_affixes_natural"
+    const val DATA_VERSION_TAG = "tinkers_construct_affixes_data_version"
     const val DATA_VERSION = 2
 
     fun canTarget(stack: ItemStack): Boolean = stack.count == 1 && profile(stack) != null

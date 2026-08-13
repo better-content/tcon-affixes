@@ -1,4 +1,4 @@
-package io.github.tconaffixes
+package com.bettercontent.tinkersconstructaffixes
 
 import net.minecraft.ChatFormatting
 import net.minecraft.core.registries.Registries
@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
 
 object TConAffixRewards {
     private const val TCON_MODID = "tconstruct"
-    internal const val AFFIXES_TAG = "tconaffixes_affixes"
+    internal const val AFFIXES_TAG = "tinkers_construct_affixes_affixes"
     private const val TIC_MATERIALS_TAG = "tic_materials"
     private const val TIC_STATS_TAG = "tic_stats"
 
@@ -384,7 +384,7 @@ object TConAffixRewards {
     fun onTooltip(event: ItemTooltipEvent) {
         val affixes = existingToolAffixes(event.itemStack)
         if (affixes.isEmpty()) return
-        event.toolTip += Component.translatable("tooltip.tconaffixes.affixes").withStyle(ChatFormatting.DARK_RED)
+        event.toolTip += Component.translatable("tooltip.tinkers_construct_affixes.affixes").withStyle(ChatFormatting.DARK_RED)
         affixes.forEach { affix ->
             event.toolTip += Component.literal(formatAffixLine(affix)).withStyle(
                 when (affix.getString("kind")) {
@@ -406,7 +406,7 @@ object TConAffixRewards {
         } else if (!tag.getBoolean(AffixCrafting.NATURAL_TAG)) {
             event.toolTip += Component.literal("Forged").withStyle(ChatFormatting.GRAY)
         }
-        event.toolTip += Component.translatable("tooltip.tconaffixes.salvage_hint").withStyle(ChatFormatting.DARK_GRAY)
+        event.toolTip += Component.translatable("tooltip.tinkers_construct_affixes.salvage_hint").withStyle(ChatFormatting.DARK_GRAY)
     }
 
     internal fun rollAffixes(
