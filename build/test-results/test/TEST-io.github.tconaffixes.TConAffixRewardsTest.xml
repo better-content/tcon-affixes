@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.tconaffixes.TConAffixRewardsTest" tests="28" skipped="0" failures="0" errors="0" timestamp="2026-08-11T17:03:10" hostname="6a8f2c838483" time="0.146">
+  <properties/>
+  <testcase name="multiStatAffixesWriteRollListsInsteadOfSingleLegacyStat()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.031"/>
+  <testcase name="mergeWithEmptyInputPreservesExistingAffixes()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.005"/>
+  <testcase name="rolledAffixesRespectFamilyCapsGroupsAndTierBounds()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.074"/>
+  <testcase name="affixCountRollsUseWeightedPoeStyleBands()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="physicalOriginsComeFromPartAndMaterialIdentity()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="modifierOnlyAffixesSerializeGrantedEffects()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="aggregateGrantedModifiersSumsAcrossAffixes()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="fontAffixCountNeverRollsSingleAffix()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="partPoolCoversBroadBaseTypeVariety()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="mergeDoesNotTreatBlankSourcePartAsReplacementKey()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="configuredMaterialTierRollHonorsWeightsAndCanReachJackpotTier()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="multiplierTagIsEmptyForNoAffixes()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="multiplierTagCompoundsMatchingStatsIndependently()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="rolledAffixTagsContainTierMetadataAndSingleStatCompatibility()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="everyFontRollGuaranteesAnExclusiveAffixAndRespectsCaps()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.005"/>
+  <testcase name="mergeCopiesAffixTags()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="killCurrencyTableContainsAllSixCurrenciesAtExpectedOrderOfMagnitude()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.016"/>
+  <testcase name="everyPartFamilyHasPrefixAndSuffixCandidates()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="mergeReplacesOnlyMatchingSourcePart()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="multiplierTagCompoundsMultiStatAffixRollsByStat()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="affixPoolIsLargeUniqueAndIncludesCreativeModifierAffixes()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="multiplierTagIgnoresModifierOnlyAffixes()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="mergedReplacementAffixesProduceExpectedToolMultipliers()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="salvageBandsIncreaseWithOriginalQualityAndFontOrigin()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="mergeRemovesReplacedPartWhenItsIncomingAffixHasNoCompatibleLines()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="sixAffixRollsCanBeGeneratedWithoutViolatingPrefixSuffixCaps()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <testcase name="ownedModifierDeltaRecoversFromAStaleOwnershipLedger()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.0"/>
+  <testcase name="ownedModifierDeltaPreservesOrdinaryLevels()" classname="io.github.tconaffixes.TConAffixRewardsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

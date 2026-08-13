@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="tconaffixes"
+version="1.0.0"
+displayName="TCon Affixes"
+authors="Gerald"
+description='''Affixed Tinkers parts found throughout the world.'''
+
+[[dependencies.tconaffixes]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.tconaffixes]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.tconaffixes]]
+modId="tconstruct"
+mandatory=true
+versionRange="[3.10,)"
+ordering="AFTER"
+side="BOTH"
