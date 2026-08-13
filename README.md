@@ -26,7 +26,7 @@ Use Java 17 and run:
 ./gradlew test reobfJar stageRuntimeJar
 ```
 
-The deployable reobfuscated jar is written to `build/libs/tinkers_construct_affixes-<version>.jar`.
+The deployable reobfuscated JAR is written to `build/libs/tinkers-construct-affixes-<version>.jar`.
 
 ## Canonical identity
 
