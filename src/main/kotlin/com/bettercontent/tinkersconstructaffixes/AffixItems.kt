@@ -58,7 +58,13 @@ private class AffixedPartCacheItem : Item(Properties().stacksTo(16)) {
 
         val origin = AffixOrigins.fromDimension(level.dimension().location())
         val reward = TConAffixRewards.rollAffixedPart(level.random, origin, "cache")
-            ?: return InteractionResultHolder.fail(held)
+            ?: run {
+                player.displayClientMessage(
+                    net.minecraft.network.chat.Component.translatable("message.tinkers_construct_affixes.cache_unavailable"),
+                    true
+                )
+                return InteractionResultHolder.fail(held)
+            }
         held.shrink(1)
         val serverPlayer = player as ServerPlayer
         if (!serverPlayer.inventory.add(reward)) {

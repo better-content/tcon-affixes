@@ -16,6 +16,7 @@
   "tooltip.tinkers_construct_affixes.salvage_hint": "Shift-right-click in an inventory to strip and salvage.",
   "message.tinkers_construct_affixes.armed": "%s selected",
   "message.tinkers_construct_affixes.targeting": "Choose a Tinkers part · Shift repeats",
+  "message.tinkers_construct_affixes.cache_unavailable": "No compatible affixed part is available for this Font and material configuration.",
   "message.tinkers_construct_affixes.operation.incompatible": "That currency cannot affect this part.",
   "message.tinkers_construct_affixes.operation.locked": "This part is mutation locked.",
   "message.tinkers_construct_affixes.operation.no_affixes": "That part has no affixes to change.",

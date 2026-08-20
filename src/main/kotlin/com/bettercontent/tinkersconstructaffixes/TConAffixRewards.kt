@@ -59,6 +59,12 @@ object TConAffixRewards {
         val weight: Int = 100
     )
 
+    private data class PartCandidate(
+        val profile: PartProfile,
+        val item: ToolPartItem,
+        val materialsByTier: Map<Int, List<IMaterial>>
+    )
+
     internal data class Tier(
         val rank: Int,
         val name: String,
@@ -339,30 +345,21 @@ object TConAffixRewards {
         origin: AffixOrigin = AffixOrigin.GLOBAL,
         provenance: String = "unknown"
     ): ItemStack? {
-        if (!ModList.get().isLoaded(TCON_MODID)) return null
+        if (!ModList.get().isLoaded(TCON_MODID) || !MaterialRegistry.isFullyLoaded()) return null
         val exclusiveRoll = origin != AffixOrigin.GLOBAL && random.nextFloat() < 0.35f
-        var candidates = allPartProfiles.filter { AffixOrigins.allowsPart(origin, it.itemId, exclusiveRoll) }.mapNotNull { profile ->
-            val item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId) ?: return@mapNotNull null)
-                ?.takeUnless { it.defaultInstance.isEmpty } as? ToolPartItem
-                ?: return@mapNotNull null
-            profile to item
-        }
+        var candidates = partCandidates(origin, exclusiveRoll)
         if (candidates.isEmpty() && exclusiveRoll) {
-            candidates = allPartProfiles.filter { AffixOrigins.allowsPart(origin, it.itemId, false) }.mapNotNull { profile ->
-                val item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId) ?: return@mapNotNull null) as? ToolPartItem
-                    ?: return@mapNotNull null
-                profile to item
-            }
+            candidates = partCandidates(origin, false)
         }
         if (candidates.isEmpty()) return null
 
-        val (profile, item) = weightedPick(candidates, random) { it.first.weight } ?: return null
-        val material = rollMaterial(item, random, origin) ?: return null
-        val stack = item.withMaterial(material.identifier)
-        if (item.getMaterial(stack) == IMaterial.UNKNOWN_ID) return null
-        val sourcePart = ForgeRegistries.ITEMS.getKey(stack.item)?.toString() ?: profile.itemId
+        val candidate = weightedPick(candidates, random) { it.profile.weight } ?: return null
+        val material = rollCompatibleMaterial(candidate.materialsByTier, tierWeights(origin), random) ?: return null
+        val stack = candidate.item.withMaterial(material.identifier)
+        if (candidate.item.getMaterial(stack) == IMaterial.UNKNOWN_ID) return null
+        val sourcePart = ForgeRegistries.ITEMS.getKey(stack.item)?.toString() ?: candidate.profile.itemId
         val affixes = rollAffixes(
-            sourcePart, profile.family, random, origin,
+            sourcePart, candidate.profile.family, random, origin,
             targetCount = if (origin == AffixOrigin.GLOBAL) null else fontAffixCount(random.nextFloat()),
             lucky = origin != AffixOrigin.GLOBAL,
             guaranteeOriginAffix = origin != AffixOrigin.GLOBAL
@@ -512,22 +509,51 @@ object TConAffixRewards {
         return TConAffixConfig.materialsForTier(tier).mapNotNull(MaterialId::tryParse)
     }
 
-    private fun rollMaterial(part: ToolPartItem, random: RandomSource, origin: AffixOrigin): IMaterial? {
-        if (!MaterialRegistry.isFullyLoaded()) return null
+    internal fun viableMaterialsByTier(part: ToolPartItem, origin: AffixOrigin): Map<Int, List<IMaterial>> {
+        if (!MaterialRegistry.isFullyLoaded()) return emptyMap()
         val registry = MaterialRegistry.getInstance()
-        val candidatesByTier = (1..4).associateWith { tier ->
+        return (1..4).associateWith { tier ->
             AffixOrigins.materialIds(origin, tier).mapNotNull(MaterialId::tryParse).mapNotNull { id ->
                 registry.getMaterial(id).takeUnless { material ->
                     material == IMaterial.UNKNOWN || material.isHidden || !part.canUseMaterial(material)
                 }
             }
         }
-        val selectedTier = rollConfiguredTier(random, if (origin == AffixOrigin.GLOBAL) TConAffixConfig.tierWeights() else listOf(4500, 3500, 1700, 300)) ?: return null
-        for (tier in selectedTier downTo 1) {
+    }
+
+    internal fun tierWeights(origin: AffixOrigin): List<Int> =
+        if (origin == AffixOrigin.GLOBAL) TConAffixConfig.tierWeights() else listOf(4500, 3500, 1700, 300)
+
+    internal fun <T> rollCompatibleMaterial(
+        candidatesByTier: Map<Int, List<T>>,
+        weights: List<Int>,
+        random: RandomSource
+    ): T? {
+        val viableTiers = (1..4).mapNotNull { tier ->
             val candidates = candidatesByTier[tier].orEmpty()
-            if (candidates.isNotEmpty()) return candidates[random.nextInt(candidates.size)]
+            val weight = weights.getOrElse(tier - 1) { 0 }.coerceAtLeast(0)
+            if (candidates.isEmpty() || weight == 0) null else Triple(tier, candidates, weight)
         }
-        return null
+        val selected = weightedPick(viableTiers, random) { it.third } ?: return null
+        return selected.second[random.nextInt(selected.second.size)]
+    }
+
+    internal fun hasPositiveWeightedMaterials(materialsByTier: Map<Int, List<IMaterial>>, origin: AffixOrigin): Boolean {
+        val weights = tierWeights(origin)
+        return (1..4).any { tier -> materialsByTier[tier].orEmpty().isNotEmpty() && weights.getOrElse(tier - 1) { 0 } > 0 }
+    }
+
+    private fun partCandidates(origin: AffixOrigin, exclusive: Boolean): List<PartCandidate> {
+        return allPartProfiles
+            .filter { AffixOrigins.allowsPart(origin, it.itemId, exclusive) }
+            .mapNotNull { profile ->
+                val item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(profile.itemId) ?: return@mapNotNull null)
+                    ?.takeUnless { it.defaultInstance.isEmpty } as? ToolPartItem
+                    ?: return@mapNotNull null
+                val materialsByTier = viableMaterialsByTier(item, origin)
+                if (!hasPositiveWeightedMaterials(materialsByTier, origin)) return@mapNotNull null
+                PartCandidate(profile, item, materialsByTier)
+            }
     }
 
     internal fun affixCountForRoll(roll: Float): Int {

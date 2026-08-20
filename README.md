@@ -2,7 +2,7 @@
 
 Forge 1.20.1 mod that turns Tinkers' Construct parts into a global, long-term loot chase.
 
-Affixed parts can drop from player-killed hostile mobs and appear in chest loot caches. Each reward has a compatible Tinkers material, rolled from configurable weighted tiers; tier 4 remains a deliberately rare jackpot. Percentage rolls persist through Tinkers stat rebuilds, and modifier grants are tracked separately from ordinary player-applied modifier levels.
+Affixed parts can drop from player-killed hostile mobs and appear in chest loot caches. Each reward has a compatible Tinkers material, rolled from configurable weighted tiers; tier 4 remains a deliberately rare jackpot. Tier weights are renormalized across the tiers that actually contain materials compatible with the selected part and physical origin, so a valid cache cannot randomly fail because an incompatible tier was selected. Percentage rolls persist through Tinkers stat rebuilds, and modifier grants are tracked separately from ordinary player-applied modifier levels.
 
 The Nether, Aether, Undergarden, and Otherside act as distinct "Fonts" with themed materials, part pools, guaranteed regional affixes, and better 2–6-affix rolls. Physical part/material provenance wins over stored metadata, so moving or editing NBT cannot turn a global item into a Font reward.
 
